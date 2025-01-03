@@ -1,0 +1,4 @@
+---
+---@class dark_present.StartPresentationOpts
+---@field bufnr number
+---

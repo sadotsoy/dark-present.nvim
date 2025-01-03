@@ -2,16 +2,19 @@
 ---@module 'dark_present'
 ---
 
-local say_runner = require("dark_present._commands.say.runner")
+local window_core = require("dark_present._core.create_window")
 
 local M = {}
 
---- Print word
----@param word  string: The text to say
----@param repeat_ number?: A 1-or-more value. The number to print `word`
----@param style  string?: `uppercase` or `lowercase`
-function M.run_hello_word(word, repeat_, style)
-	say_runner.run_say_word(word, repeat_, style)
+---Function that starts the presentation
+---@param opts dark_present.StartPresentationOpts
+function M.start_presentation(opts)
+	local bufnr = opts.bufnr or nil
+	if bufnr == nil then
+		return
+	end
+
+	window_core.create_presentation(bufnr)
 end
 
 return M

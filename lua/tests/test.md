@@ -20,3 +20,9 @@ Testing
 # Second Template
 
 Second Template
+
+- Second
+
+# Very big third title to test the center line
+
+Third Slide
