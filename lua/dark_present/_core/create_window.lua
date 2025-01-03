@@ -14,7 +14,7 @@ local height = vim.o.lines
 
 ---@type vim.api.keyset.win_config
 local dark_present_window_config = {
-	header = {
+	float_header = {
 		relative = "editor",
 		width = width,
 		height = 1,
@@ -24,7 +24,7 @@ local dark_present_window_config = {
 		row = 0,
 		zindex = 2,
 	},
-	body = {
+	float_body = {
 		relative = "editor",
 		width = width - 20,
 		height = height - 6,
@@ -34,7 +34,7 @@ local dark_present_window_config = {
 		row = 3,
 		zindex = 2,
 	},
-	bg = {
+	float_bg = {
 		relative = "editor",
 		width = width,
 		height = height,
@@ -63,22 +63,20 @@ end
 ---Function that creates the presentation
 ---@param bufnr number
 function M.create_presentation(bufnr)
+	---@type Slides
 	local slides = slides_core.get_slides(bufnr)
 	if slides == nil then
 		return
 	end
 
-	-- Create floating windows for header and body
-	local float_bg = M.create_floating_window(dark_present_window_config.bg)
-	local float_header = M.create_floating_window(dark_present_window_config.header)
-	local float_body = M.create_floating_window(dark_present_window_config.body)
-
 	---@type dark_present.Windows
-	local windows = {
-		float_bg = float_bg,
-		float_header = float_header,
-		float_body = float_body,
-	}
+	---@diagnostic disable-next-line: missing-fields
+	local windows = {}
+
+	-- create windows for each dark_present_window_config
+	for window, config in pairs(dark_present_window_config) do
+		windows[window] = M.create_floating_window(config)
+	end
 
 	-- Call attachments
 	on_attach_core.on_attach(windows, slides)

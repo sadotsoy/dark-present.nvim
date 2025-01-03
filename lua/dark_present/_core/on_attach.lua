@@ -13,6 +13,15 @@ local vim_config_tbl = {
 	},
 }
 
+--- Function to do something in each window
+---@param windows dark_present.Windows
+---@param callback function A function to call for each window
+local function for_each_window(windows, callback)
+	for _, config in pairs(windows) do
+		callback(config)
+	end
+end
+
 local M = {}
 
 --- Function to handle the attachs
@@ -58,9 +67,9 @@ function M.on_attach(windows, slides)
 				vim.opt[option] = config.original
 			end
 
-			for _, config in pairs(windows) do
+			for_each_window(windows, function(config)
 				api.nvim_win_close(config.winnr, true)
-			end
+			end)
 		end,
 	})
 end
@@ -75,9 +84,9 @@ function M.move_slide(windows, slides, idx)
 	local current_title = current_slide.title
 
 	local total_string_to_title = string.rep(" ", (width - #current_title) / 2)
-	local title = total_string_to_title .. current_title
+	local center_title = total_string_to_title .. current_title
 
-	M.set_window_slides(windows.float_header.bufnr, { title })
+	M.set_window_slides(windows.float_header.bufnr, { center_title })
 	M.set_window_slides(windows.float_body.bufnr, current_slide.body)
 end
 
