@@ -73,8 +73,15 @@ function M.create_presentation(bufnr)
 	local float_header = M.create_floating_window(dark_present_window_config.header)
 	local float_body = M.create_floating_window(dark_present_window_config.body)
 
+	---@type dark_present.Windows
+	local windows = {
+		float_bg = float_bg,
+		float_header = float_header,
+		float_body = float_body,
+	}
+
 	-- Call attachments
-	on_attach_core.on_attach(float_header, float_body, float_bg, slides)
+	on_attach_core.on_attach(windows, slides)
 end
 
 return M
