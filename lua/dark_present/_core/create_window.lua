@@ -14,6 +14,16 @@ local height = vim.o.lines
 
 ---@type vim.api.keyset.win_config
 local dark_present_window_config = {
+	float_bg = {
+		relative = "editor",
+		width = width,
+		height = height,
+		style = "minimal",
+		border = "none",
+		col = 0,
+		row = 0,
+		zindex = 1,
+	},
 	float_header = {
 		relative = "editor",
 		width = width,
@@ -34,25 +44,17 @@ local dark_present_window_config = {
 		row = 3,
 		zindex = 2,
 	},
-	float_bg = {
-		relative = "editor",
-		width = width,
-		height = height,
-		style = "minimal",
-		border = "none",
-		col = 0,
-		row = 0,
-		zindex = 1,
-	},
 }
 
 ---Function that creates a floating window
 ---@param config vim.api.keyset.win_config
+---@param enter? boolean
 ---@return dark_present.Window
-function M.create_floating_window(config)
+function M.create_floating_window(config, enter)
+	enter = enter or false
 	local bufnr = api.nvim_create_buf(false, true)
 
-	local winnr = api.nvim_open_win(bufnr, true, config)
+	local winnr = api.nvim_open_win(bufnr, enter, config)
 
 	return {
 		bufnr = bufnr,
@@ -73,9 +75,12 @@ function M.create_presentation(bufnr)
 	---@diagnostic disable-next-line: missing-fields
 	local windows = {}
 
-	-- create windows for each dark_present_window_config
 	for window, config in pairs(dark_present_window_config) do
-		windows[window] = M.create_floating_window(config)
+		if window == "float_body" then
+			windows[window] = M.create_floating_window(config, true)
+		else
+			windows[window] = M.create_floating_window(config)
+		end
 	end
 
 	-- Call attachments
