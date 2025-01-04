@@ -13,14 +13,21 @@ local vim_config_tbl = {
 	},
 }
 
+--- Function to do something in each window
+---@param windows dark_present.Windows
+---@param callback function A function to call for each window
+local function for_each_window(windows, callback)
+	for _, config in pairs(windows) do
+		callback(config)
+	end
+end
+
 local M = {}
 
 --- Function to handle the attachs
----@param float_header dark_present.Window
----@param float_body dark_present.Window
----@param float_bg dark_present.Window
+---@param windows dark_present.Windows
 ---@param slides Slides
-function M.on_attach(float_header, float_body, float_bg, slides)
+function M.on_attach(windows, slides)
 	-- Value to manage the slides
 	local current_slide = 1
 
@@ -30,56 +37,57 @@ function M.on_attach(float_header, float_body, float_bg, slides)
 	end
 
 	-- Set filetype
-	vim.bo[float_body.bufnr].filetype = filetype
-	vim.bo[float_header.bufnr].filetype = filetype
+	vim.bo[windows.float_body.bufnr].filetype = filetype
+	vim.bo[windows.float_header.bufnr].filetype = filetype
 
 	-- Set the first slide
-	M.move_slide(float_header, float_body, slides, current_slide)
+	M.move_slide(windows, slides, current_slide)
 
 	-- Set keymaps
 	vim.keymap.set("n", "n", function()
 		current_slide = math.min(current_slide + 1, #slides.slide)
-		M.move_slide(float_header, float_body, slides, current_slide)
+		M.move_slide(windows, slides, current_slide)
 	end, {
-		buffer = float_body.bufnr,
+		buffer = windows.float_body.bufnr,
 	})
 
 	vim.keymap.set("n", "p", function()
 		current_slide = math.max(current_slide - 1, 1)
-		M.move_slide(float_header, float_body, slides, current_slide)
+		M.move_slide(windows, slides, current_slide)
 	end, {
-		buffer = float_body.bufnr,
+		buffer = windows.float_body.bufnr,
 	})
 
 	-- Bufleave event to close header floatin when the body is closed
 	api.nvim_create_autocmd("BufLeave", {
-		buffer = float_body.bufnr,
+		buffer = windows.float_body.bufnr,
 		callback = function()
 			-- Set vim option to original
 			for option, config in pairs(vim_config_tbl) do
 				vim.opt[option] = config.original
 			end
-			pcall(api.nvim_win_close, float_header.winnr, true)
-			pcall(api.nvim_win_close, float_bg.winnr, true)
+
+			for_each_window(windows, function(config)
+				api.nvim_win_close(config.winnr, true)
+			end)
 		end,
 	})
 end
 
 ---Function to move between slides
----@param float_header dark_present.Window
----@param float_body dark_present.Window
+---@param windows dark_present.Windows
 ---@param slides Slides
 ---@param idx number
-function M.move_slide(float_header, float_body, slides, idx)
+function M.move_slide(windows, slides, idx)
 	local current_slide = slides.slide[idx]
 	local width = vim.o.columns
 	local current_title = current_slide.title
 
 	local total_string_to_title = string.rep(" ", (width - #current_title) / 2)
-	local title = total_string_to_title .. current_title
+	local center_title = total_string_to_title .. current_title
 
-	M.set_window_slides(float_header.bufnr, { title })
-	M.set_window_slides(float_body.bufnr, current_slide.body)
+	M.set_window_slides(windows.float_header.bufnr, { center_title })
+	M.set_window_slides(windows.float_body.bufnr, current_slide.body)
 end
 
 ---Function that sets the slides into the window
